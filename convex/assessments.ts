@@ -1,0 +1,315 @@
+// convex/assessments.ts
+
+import { query, mutation } from "./_generated/server";
+import { v } from "convex/values";
+
+// Get all assessments for a project
+export const list = query({
+  args: {
+    projectId: v.string(),
+    status: v.optional(v.string()), // filter by status
+  },
+  handler: async (ctx, args) => {
+    const status = args.status;
+    if (status) {
+      return await ctx.db
+        .query("assessments")
+        .withIndex("by_project_status", (q) =>
+          q.eq("projectId", args.projectId).eq("status", status)
+        )
+        .order("desc")
+        .collect();
+    }
+
+    return await ctx.db
+      .query("assessments")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .order("desc")
+      .collect();
+  },
+});
+
+// Get a single assessment by ID
+export const get = query({
+  args: { assessmentId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.assessmentId as any);
+  },
+});
+
+// Create a new assessment and start it immediately
+export const create = mutation({
+  args: {
+    projectId: v.string(),
+    name: v.string(),
+    description: v.optional(v.string()),
+    type: v.string(), // "blackbox" | "whitebox"
+    targetType: v.string(), // "web_app" | "api" | "mobile" | "network"
+    targetUrl: v.optional(v.string()),
+    createdByUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const assessmentId = await ctx.db.insert("assessments", {
+      projectId: args.projectId,
+      name: args.name,
+      description: args.description,
+      type: args.type,
+      targetType: args.targetType,
+      targetUrl: args.targetUrl,
+      status: "running",
+      createdByUserId: args.createdByUserId,
+      startedAt: now,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    return assessmentId;
+  },
+});
+
+// Run the assessment scan (simulates 5 seconds, then generates findings/results)
+export const runScan = mutation({
+  args: {
+    assessmentId: v.string(),
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const assessment = await ctx.db.get(args.assessmentId as any);
+    if (!assessment) {
+      throw new Error("Assessment not found");
+    }
+
+    if (assessment.status !== "running") {
+      throw new Error("Assessment is not in running state");
+    }
+
+    // Simulate scan delay (5 seconds)
+    // In a real implementation, this would be an action or scheduled function
+    // For now, we'll generate findings/results immediately
+    // The client will handle showing loading state for 5 seconds
+
+    const now = Date.now();
+
+    // Generate findings
+    const findingsData = [
+      {
+        assessmentId: args.assessmentId,
+        title: "SQL Injection in User Authentication",
+        description:
+          "The application is vulnerable to SQL injection attacks in the login endpoint. User input is directly concatenated into SQL queries without proper sanitization.",
+        severity: "critical",
+        status: "open",
+        cweId: "CWE-89",
+        cvssScore: 9.8,
+        location: "/api/auth/login",
+        evidence:
+          "POST request to /api/auth/login with payload: username=' OR '1'='1",
+        remediation:
+          "Use parameterized queries or prepared statements. Implement input validation and sanitization.",
+        createdByUserId: args.userId,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        assessmentId: args.assessmentId,
+        title: "Cross-Site Scripting (XSS) in Comments Section",
+        description:
+          "The comments section does not properly sanitize user input, allowing malicious scripts to be executed in other users' browsers.",
+        severity: "high",
+        status: "open",
+        cweId: "CWE-79",
+        cvssScore: 7.2,
+        location: "/comments",
+        evidence: "Stored XSS payload: <script>alert('XSS')</script>",
+        remediation:
+          "Implement proper output encoding. Use Content Security Policy (CSP) headers.",
+        createdByUserId: args.userId,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        assessmentId: args.assessmentId,
+        title: "Weak Password Policy",
+        description:
+          "The application allows users to set weak passwords without sufficient complexity requirements.",
+        severity: "medium",
+        status: "open",
+        cweId: "CWE-521",
+        cvssScore: 5.3,
+        location: "/api/users/register",
+        evidence: "Password '123456' was accepted during registration",
+        remediation:
+          "Enforce strong password policy: minimum 12 characters, mix of uppercase, lowercase, numbers, and special characters.",
+        createdByUserId: args.userId,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        assessmentId: args.assessmentId,
+        title: "Missing Security Headers",
+        description:
+          "The application is missing important security headers such as X-Frame-Options, X-Content-Type-Options, and Strict-Transport-Security.",
+        severity: "low",
+        status: "open",
+        cvssScore: 3.1,
+        location: "All endpoints",
+        evidence: "HTTP response headers analysis",
+        remediation:
+          "Add security headers: X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Strict-Transport-Security: max-age=31536000",
+        createdByUserId: args.userId,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        assessmentId: args.assessmentId,
+        title: "Information Disclosure in Error Messages",
+        description:
+          "Error messages reveal sensitive information about the application structure and database schema.",
+        severity: "info",
+        status: "open",
+        location: "/api/users/123",
+        evidence:
+          "Error message: 'Table users does not exist' when accessing invalid user ID",
+        remediation:
+          "Implement generic error messages for production. Log detailed errors server-side only.",
+        createdByUserId: args.userId,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ];
+
+    // Insert findings
+    for (const finding of findingsData) {
+      await ctx.db.insert("findings", finding);
+    }
+
+    // Generate results
+    const resultsData = [
+      {
+        assessmentId: args.assessmentId,
+        type: "scan_data",
+        data: JSON.stringify({
+          scanId: `scan-${args.assessmentId.slice(0, 8)}`,
+          startTime: new Date(assessment.startedAt || now).toISOString(),
+          endTime: new Date(now).toISOString(),
+          totalRequests: 15420,
+          vulnerabilitiesFound: 5,
+          endpointsScanned: 342,
+          status: "completed",
+        }),
+        metadata: JSON.stringify({ tool: "OWASP ZAP", version: "2.12.0" }),
+        createdByUserId: args.userId,
+        createdAt: now,
+      },
+      {
+        assessmentId: args.assessmentId,
+        type: "vulnerability",
+        data: JSON.stringify({
+          id: "vuln-001",
+          name: "SQL Injection",
+          severity: "critical",
+          affectedEndpoints: ["/api/auth/login", "/api/users/search"],
+          description: "SQL injection vulnerability detected",
+        }),
+        createdByUserId: args.userId,
+        createdAt: now - 1800000,
+      },
+      {
+        assessmentId: args.assessmentId,
+        type: "configuration",
+        data: JSON.stringify({
+          securityHeaders: {
+            "X-Frame-Options": "missing",
+            "X-Content-Type-Options": "missing",
+            "Strict-Transport-Security": "missing",
+            "Content-Security-Policy": "missing",
+          },
+          sslConfiguration: {
+            tlsVersion: "TLS 1.2",
+            cipherSuites: ["TLS_RSA_WITH_AES_256_CBC_SHA"],
+            certificateValid: true,
+          },
+        }),
+        createdByUserId: args.userId,
+        createdAt: now - 1200000,
+      },
+      {
+        assessmentId: args.assessmentId,
+        type: "log",
+        data: JSON.stringify({
+          timestamp: new Date(now - 900000).toISOString(),
+          level: "WARNING",
+          message: "Suspicious activity detected",
+          details: {
+            ip: "192.168.1.100",
+            userAgent: "Mozilla/5.0",
+            endpoint: "/api/admin/users",
+            statusCode: 403,
+          },
+        }),
+        createdByUserId: args.userId,
+        createdAt: now - 900000,
+      },
+    ];
+
+    // Insert results
+    for (const result of resultsData) {
+      await ctx.db.insert("results", result);
+    }
+
+    // Update assessment status to completed
+    await ctx.db.patch(args.assessmentId as any, {
+      status: "completed",
+      completedAt: now,
+      updatedAt: now,
+    });
+
+    return { success: true };
+  },
+});
+
+// Update assessment status
+export const updateStatus = mutation({
+  args: {
+    assessmentId: v.string(),
+    status: v.string(), // "pending" | "running" | "completed" | "failed"
+    startedAt: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const { assessmentId, ...updates } = args;
+    const existing = await ctx.db.get(assessmentId as any);
+    if (!existing) {
+      throw new Error("Assessment not found");
+    }
+
+    await ctx.db.patch(assessmentId as any, {
+      ...updates,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+// Update assessment details
+export const update = mutation({
+  args: {
+    assessmentId: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    targetUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { assessmentId, ...updates } = args;
+    const existing = await ctx.db.get(assessmentId as any);
+    if (!existing) {
+      throw new Error("Assessment not found");
+    }
+
+    await ctx.db.patch(assessmentId as any, {
+      ...updates,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
