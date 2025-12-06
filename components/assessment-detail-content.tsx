@@ -46,7 +46,7 @@ export default function AssessmentDetailContent({
   // Only send targetUrl, gitRepoUrl, and type (NO userId)
   const requestBody = useMemo(
     () =>
-      assessment && (assessment.targetUrl || assessment.gitRepoUrl)
+      assessment && ('targetUrl' in assessment) && (assessment.targetUrl || assessment.gitRepoUrl)
         ? {
             targetUrl: assessment.targetUrl || "",
             gitRepoUrl: assessment.gitRepoUrl || "",
