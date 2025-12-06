@@ -459,28 +459,6 @@ export const runScan = mutation({
   },
 });
 
-// Update assessment status
-export const updateStatus = mutation({
-  args: {
-    assessmentId: v.string(),
-    status: v.string(), // "pending" | "running" | "completed" | "failed"
-    startedAt: v.optional(v.number()),
-    completedAt: v.optional(v.number()),
-  },
-  handler: async (ctx, args) => {
-    const { assessmentId, ...updates } = args;
-    const existing = await ctx.db.get(assessmentId as any);
-    if (!existing) {
-      throw new Error("Assessment not found");
-    }
-
-    await ctx.db.patch(assessmentId as any, {
-      ...updates,
-      updatedAt: Date.now(),
-    });
-  },
-});
-
 // Update assessment details
 export const update = mutation({
   args: {
