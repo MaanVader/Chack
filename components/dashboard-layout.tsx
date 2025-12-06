@@ -31,20 +31,24 @@ export default function DashboardLayout({ userId }: DashboardLayoutProps) {
   }
 
   return (
-    <>
+    <div className="flex h-screen bg-background pt-16">
       <DashboardSidebar currentOrgId={defaultOrg._id} userId={userId} />
-      <main className="flex-1 px-4 py-10 bg-background text-foreground">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-foreground font-display">Dashboard</h1>
-            <p className="text-sm text-muted-foreground font-display">
-              Welcome back! Manage your security assessments.
-            </p>
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
+          <div className="px-6 py-8 bg-background text-foreground">
+            <div className="mx-auto max-w-7xl">
+              <div className="mb-8">
+                <h1 className="text-3xl font-bold text-foreground font-display mb-2">Dashboard</h1>
+                <p className="text-base text-muted-foreground font-display">
+                  Welcome back! Manage your security assessments.
+                </p>
+              </div>
+              <DashboardContent userId={userId} />
+            </div>
           </div>
-          <DashboardContent userId={userId} />
         </div>
       </main>
-    </>
+    </div>
   );
 }
 

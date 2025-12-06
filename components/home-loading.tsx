@@ -36,8 +36,8 @@ export default function HomeLoading() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="rounded-2xl border border-border bg-card/50 px-4 py-3 shadow-sm animate-card-load"
-              style={{ animationDelay: `${i * 0.1}s` }}
+              className="rounded-lg border border-border bg-card/50 px-4 py-3 shadow-sm animate-card-load"
+              style={{ animationDelay: `${i * 0.08}s` }}
             >
               <div className="h-4 w-full bg-muted/50 rounded mb-2 animate-pulse" />
               <div className="h-4 w-3/4 bg-muted/30 rounded animate-pulse" />
@@ -70,28 +70,28 @@ export default function HomeLoading() {
         </div>
       </div>
 
-      {/* Animated "How it works" section skeleton */}
-      <div className="mx-auto mt-10 max-w-5xl space-y-8 rounded-3xl border border-border bg-card/50 px-6 py-8 shadow-sm animate-fade-in-delayed">
-        <div className="space-y-3 text-center">
-          <div className="h-4 w-32 bg-primary/20 rounded mx-auto animate-pulse" />
-          <div className="h-8 w-96 max-w-full bg-foreground/10 rounded mx-auto animate-shimmer" />
-          <div className="h-6 w-full max-w-2xl bg-muted/50 rounded mx-auto animate-pulse" />
+        {/* Animated "How it works" section skeleton */}
+        <div className="mx-auto mt-10 max-w-5xl space-y-6 rounded-2xl border border-border bg-card/50 px-6 py-8 shadow-sm animate-fade-in-delayed">
+          <div className="space-y-3 text-center">
+            <div className="h-4 w-32 bg-primary/20 rounded mx-auto animate-pulse" />
+            <div className="h-8 w-96 max-w-full bg-foreground/10 rounded mx-auto animate-shimmer" />
+            <div className="h-6 w-full max-w-2xl bg-muted/50 rounded mx-auto animate-pulse" />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="rounded-lg border border-border bg-card/50 px-4 py-5 shadow-sm animate-card-load"
+                style={{ animationDelay: `${i * 0.1}s` }}
+              >
+                <div className="h-3 w-16 bg-primary/20 rounded mb-3 animate-pulse" />
+                <div className="h-6 w-full bg-foreground/10 rounded mb-2 animate-shimmer" />
+                <div className="h-4 w-full bg-muted/50 rounded mb-1 animate-pulse" />
+                <div className="h-4 w-5/6 bg-muted/30 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="grid gap-5 sm:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="rounded-2xl border border-border bg-card/50 px-5 py-6 shadow-sm animate-card-load"
-              style={{ animationDelay: `${i * 0.15}s` }}
-            >
-              <div className="h-3 w-16 bg-primary/20 rounded mb-3 animate-pulse" />
-              <div className="h-6 w-full bg-foreground/10 rounded mb-2 animate-shimmer" />
-              <div className="h-4 w-full bg-muted/50 rounded mb-1 animate-pulse" />
-              <div className="h-4 w-5/6 bg-muted/30 rounded animate-pulse" />
-            </div>
-          ))}
-        </div>
-      </div>
     </main>
   );
 }

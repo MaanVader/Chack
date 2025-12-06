@@ -117,7 +117,7 @@ export default function DashboardSidebar({
   const user = useQuery(api.users.getById, { userId });
 
   return (
-    <aside className="w-64 border-r border-border bg-card text-foreground">
+    <aside className="w-64 h-full border-r border-border bg-card text-foreground overflow-y-auto">
       <div className="p-4 space-y-6">
         {/* User Profile Section */}
         {session && user && (
