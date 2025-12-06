@@ -62,8 +62,13 @@ export default function DashboardSidebar({
   const stats = useQuery(api.organizations.getStats, { orgId: currentOrgId });
   const user = useQuery(api.users.getById, { userId });
 
+  const creditsValue =
+    currentOrg && "credits" in currentOrg ? (currentOrg.credits as number) ?? 0 : 0;
+  const creditCap = Math.max(creditsValue, 100);
+  const creditPct = Math.min(Math.round((creditsValue / creditCap) * 100), 100);
+
   return (
-    <aside className="w-64 h-full border-r border-border bg-card text-foreground overflow-y-auto">
+    <aside className="w-64 h-full border-r border-border/80 bg-card/90 backdrop-blur text-foreground overflow-y-auto">
       <div className="p-4 space-y-6">
         {/* User Profile Section */}
         {session && user && (
@@ -114,32 +119,58 @@ export default function DashboardSidebar({
             )}
           </div>
           {currentOrg && "name" in currentOrg && (
-            <div className="rounded-xl border border-border bg-card p-4 space-y-2">
-              <div className="font-semibold text-foreground font-display text-base">
-                {currentOrg.name}
+            <div className="rounded-xl border border-primary/10 bg-card/80 p-4 space-y-3 shadow-sm">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="font-semibold text-foreground font-display text-base">
+                    {currentOrg.name}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    AI coverage for your workspace
+                  </p>
+                </div>
+                <div className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary/90">
+                  Active
+                </div>
               </div>
               {"plan" in currentOrg && (
-                <div className="text-xs text-muted-foreground mt-2">
-                  <span className="px-2 py-0.5 rounded-full bg-secondary text-foreground capitalize">
+                <div className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
+                  <span
+                    className="px-2 py-0.5 rounded-full bg-secondary text-foreground capitalize"
+                    title="Plan controls credit refill cadence"
+                  >
                     {currentOrg.plan}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    Optimized for fast AI scans
                   </span>
                 </div>
               )}
               {"credits" in currentOrg && (
-                <div className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
-                  <span>Credits:</span>
-                  <span
-                    className={`font-semibold px-2 py-0.5 rounded-full transition-all duration-300 ${
-                      (currentOrg.credits ?? 0) < 3
-                        ? "text-yellow-700 bg-yellow-50"
-                        : "text-sky-700 bg-sky-50"
-                    }`}
-                  >
-                    {currentOrg.credits ?? 0}
-                  </span>
-                  {(currentOrg.credits ?? 0) < 3 && (
-                    <span className="text-yellow-700">⚠️</span>
-                  )}
+                <div className="space-y-2">
+                  <div className="text-xs text-muted-foreground flex items-center gap-2">
+                    <span>Credits:</span>
+                    <span
+                      className={`font-semibold px-2 py-0.5 rounded-full transition-all duration-300 ${
+                        creditsValue < 3
+                          ? "text-yellow-700 bg-yellow-50"
+                          : "text-sky-700 bg-sky-50"
+                      }`}
+                      title="Credits used when running AI scans"
+                    >
+                      {creditsValue}
+                    </span>
+                    {creditsValue < 3 && <span className="text-yellow-700">⚠️</span>}
+                  </div>
+                  <div className="h-1.5 w-full rounded-full bg-secondary/60 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 transition-all`}
+                      style={{ width: `${creditPct}%` }}
+                    />
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    Keep a small buffer to avoid scan interruptions.
+                  </div>
                 </div>
               )}
             </div>
