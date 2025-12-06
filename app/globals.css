@@ -124,6 +124,114 @@
   .glow-effect-hover:hover {
     box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
   }
+
+  /* Loading animations */
+  .animate-gradient-xy {
+    animation: gradientXY 15s ease infinite;
+  }
+
+  .animate-gradient-xy-delayed {
+    animation: gradientXY 20s ease infinite;
+    animation-delay: 2s;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  .dark .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  .animate-shimmer-delayed {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+    animation-delay: 0.3s;
+  }
+
+  .dark .animate-shimmer-delayed {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  .animate-pulse-slow {
+    animation: pulseSlow 2s ease-in-out infinite;
+  }
+
+  .animate-pulse-delayed {
+    animation: pulse 2s ease-in-out infinite;
+    animation-delay: 0.5s;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-card-load {
+    animation: cardLoad 0.6s ease-out backwards;
+  }
+
+  .animate-pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  .animate-fade-in-delayed {
+    animation: fadeIn 0.6s ease-out 0.3s backwards;
+  }
+
+  .animate-scan {
+    animation: scan 2s linear infinite;
+  }
+
+  .animate-scan-vertical {
+    animation: scanVertical 8s linear infinite;
+  }
+
+  .perspective-grid {
+    transform-style: preserve-3d;
+  }
+}
+
+@keyframes scan {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes scanVertical {
+  0% {
+    background-position: 0 -100vh;
+  }
+  100% {
+    background-position: 0 100vh;
+  }
 }
 
 @keyframes fadeIn {
@@ -154,6 +262,78 @@
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes gradientXY {
+  0%, 100% {
+    transform: translate(0%, 0%) scale(1);
+  }
+  25% {
+    transform: translate(20%, 20%) scale(1.1);
+  }
+  50% {
+    transform: translate(-10%, 10%) scale(0.9);
+  }
+  75% {
+    transform: translate(10%, -10%) scale(1.05);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulseSlow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.3;
+  }
+  33% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 0.6;
+  }
+  66% {
+    transform: translateY(10px) translateX(-10px);
+    opacity: 0.4;
+  }
+}
+
+@keyframes cardLoad {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.6;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 40px rgba(56, 189, 248, 0.6);
   }
 }
 
