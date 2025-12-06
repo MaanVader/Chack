@@ -15,17 +15,17 @@ export default function DashboardContent({ userId }: DashboardContentProps) {
 
   if (defaultOrg === undefined) {
     return (
-      <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-sky-500"></div>
-        <p className="text-sm text-gray-700 mt-4 font-display">Loading...</p>
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-border border-t-primary"></div>
+        <p className="text-sm text-muted-foreground mt-6 font-display">Loading your dashboard...</p>
       </div>
     );
   }
 
   if (!defaultOrg) {
     return (
-      <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center">
-        <p className="text-sm text-gray-700 font-display">
+      <div className="rounded-xl border border-border bg-card p-10 text-center">
+        <p className="text-sm text-muted-foreground font-display">
           No organization found. Please complete onboarding.
         </p>
       </div>
@@ -33,7 +33,7 @@ export default function DashboardContent({ userId }: DashboardContentProps) {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="animate-fade-in">
       <ProjectsList orgId={defaultOrg._id} />
     </div>
   );

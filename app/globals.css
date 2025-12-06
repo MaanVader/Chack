@@ -4,59 +4,233 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-}
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 7%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 7%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
+    --primary: 188 84% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 14% 94%;
+    --secondary-foreground: 0 0% 20%;
+    --muted: 210 14% 96%;
+    --muted-foreground: 0 0% 35%;
+    --accent: 188 70% 35%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 80% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 188 84% 45%;
+    --radius: 0.75rem;
+  }
 
-* {
-  @apply transition-colors duration-300 ease-out;
-}
+  .dark {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 93%;
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 93%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 93%;
+    --primary: 188 84% 55%;
+    --primary-foreground: 0 0% 6%;
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 93%;
+    --muted: 210 8% 16%;
+    --muted-foreground: 210 5% 68%;
+    --accent: 188 70% 35%;
+    --accent-foreground: 0 0% 96%;
+    --destructive: 0 65% 46%;
+    --destructive-foreground: 0 0% 96%;
+    --border: 0 0% 16%;
+    --input: 0 0% 16%;
+    --ring: 188 84% 55%;
+    --radius: 0.75rem;
+  }
 
+  * {
+    @apply border-border transition-colors duration-300 ease-out;
+  }
 
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Space Grotesk', 'Inter', sans-serif;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-  
+
   .animate-fade-in {
-    animation: fadeIn 0.4s ease-out;
+    animation: fadeIn 0.3s ease-out;
   }
-  
+
   .animate-slide-up {
-    animation: slideUp 0.5s ease-out;
+    animation: slideUp 0.4s ease-out;
   }
-  
+
   .animate-scale-in {
-    animation: scaleIn 0.3s ease-out;
+    animation: scaleIn 0.25s ease-out;
   }
-  
+
   .glass-effect {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(0, 0, 0, 0.1);
   }
-  
+
+  .dark .glass-effect {
+    background: rgba(17, 24, 39, 0.82); /* slate-900 with transparency */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* Dark-mode safety net for legacy hardcoded colors */
+  .dark .bg-white { background-color: hsl(var(--card)) !important; }
+  .dark .bg-gray-50,
+  .dark .bg-slate-50 { background-color: hsl(var(--card)) !important; }
+  .dark .bg-gray-100 { background-color: hsl(var(--secondary)) !important; }
+  .dark .bg-gray-200 { background-color: hsl(var(--secondary)) !important; }
+  .dark .border-gray-200,
+  .dark .border-slate-100,
+  .dark .border-gray-300 { border-color: hsl(var(--border)) !important; }
+  .dark .text-black,
+  .dark .text-gray-900,
+  .dark .text-gray-800 { color: hsl(var(--foreground)) !important; }
+  .dark .text-gray-700,
+  .dark .text-gray-600,
+  .dark .text-slate-800,
+  .dark .text-slate-700 { color: hsl(var(--muted-foreground)) !important; }
+  .dark .bg-gray-50 .text-black { color: hsl(var(--foreground)) !important; }
+
   .glow-effect {
     box-shadow: 0 0 20px rgba(56, 189, 248, 0.1);
   }
-  
+
   .glow-effect-hover:hover {
     box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
+  }
+
+  /* Loading animations */
+  .animate-gradient-xy {
+    animation: gradientXY 10s ease infinite;
+  }
+
+  .animate-gradient-xy-delayed {
+    animation: gradientXY 12s ease infinite;
+    animation-delay: 1s;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  .dark .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  .animate-shimmer-delayed {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+    animation-delay: 0.2s;
+  }
+
+  .dark .animate-shimmer-delayed {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  .animate-pulse-slow {
+    animation: pulseSlow 1.5s ease-in-out infinite;
+  }
+
+  .animate-pulse-delayed {
+    animation: pulse 1.5s ease-in-out infinite;
+    animation-delay: 0.3s;
+  }
+
+  .animate-float {
+    animation: float 2.5s ease-in-out infinite;
+  }
+
+  .animate-card-load {
+    animation: cardLoad 0.4s ease-out backwards;
+  }
+
+  .animate-pulse-glow {
+    animation: pulseGlow 1.5s ease-in-out infinite;
+  }
+
+  .animate-fade-in-delayed {
+    animation: fadeIn 0.5s ease-out 0.2s backwards;
+  }
+
+  .animate-scan {
+    animation: scan 2s linear infinite;
+  }
+
+  .animate-scan-vertical {
+    animation: scanVertical 8s linear infinite;
+  }
+
+  .perspective-grid {
+    transform-style: preserve-3d;
+  }
+}
+
+@keyframes scan {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes scanVertical {
+  0% {
+    background-position: 0 -100vh;
+  }
+  100% {
+    background-position: 0 100vh;
   }
 }
 
@@ -88,6 +262,78 @@ h1, h2, h3, h4, h5, h6 {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes gradientXY {
+  0%, 100% {
+    transform: translate(0%, 0%) scale(1);
+  }
+  25% {
+    transform: translate(20%, 20%) scale(1.1);
+  }
+  50% {
+    transform: translate(-10%, 10%) scale(0.9);
+  }
+  75% {
+    transform: translate(10%, -10%) scale(1.05);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulseSlow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.3;
+  }
+  33% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 0.6;
+  }
+  66% {
+    transform: translateY(10px) translateX(-10px);
+    opacity: 0.4;
+  }
+}
+
+@keyframes cardLoad {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.6;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 40px rgba(56, 189, 248, 0.6);
   }
 }
 

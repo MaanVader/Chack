@@ -19,10 +19,6 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
-  return (
-    <div className="flex bg-white">
-      <DashboardLayout userId={session.user.id} />
-    </div>
-  );
+  return <DashboardLayout userId={session.user.id} />;
 }
 
