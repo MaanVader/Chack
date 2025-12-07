@@ -716,14 +716,14 @@ This is a private project. For questions or issues, please contact the repositor
 
 # 🏆 Recognition
 
-**Built for the hackathon with 900+ participants**
+**Built for cursor hackathon 2025 (with 900+ participants)**
 
-**Winner: Best Autonomous Security Agent**
+**Winner: Best Autonomous Security Agent** (Okay, no pressure on the Judges! Just Kidding!)
 
 > **"The world's first autonomous pentest agent that performs both Black-Box and White-Box security assessments inside fully isolated containerized environments — and produces enterprise-grade reports automatically."**
 
 ---
 
-**Built with ❤️ using Next.js, Convex, NextAuth, and Nassa Agent**
+**Built with ❤️ using Next.js, Convex, NextAuth, and Our very own multi agentic security solution (NASSA) Agent**
 
 **Reducing pentest costs by 99.5% • Increasing security frequency from annual to daily**
