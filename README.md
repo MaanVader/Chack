@@ -1,4 +1,4 @@
-# 🔥 CHACK - The World's First Autonomous Pentest Agent
+# 🔥 CHACK - The World's GREATEST Autonomous Pentest Agent
 
 > **The Story: Why Our Pentest Agent Is the Best Out of 900 Participants**
 
