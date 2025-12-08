@@ -379,6 +379,7 @@ export default function AssessmentsList({ projectId }: AssessmentsListProps) {
     if (showCreateForm && isWhitebox && !hasFetchedRepos && !isLoadingRepos && session?.user?.provider === "github" && githubAccount.connected) {
       fetchGithubRepos();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showCreateForm, isWhitebox, hasFetchedRepos, isLoadingRepos, session?.user?.provider, githubAccount.connected]);
 
   const filteredRepos = useMemo(() => {

@@ -67,12 +67,13 @@ export const authOptions: NextAuthOptions = {
         
         // Fetch latest user data from Convex to get updated name
         const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+        const userId = token.sub;
         try {
-          if (convexUrl) {
+          if (convexUrl && userId) {
             // Use Promise.race to add a timeout
             const queryPromise = (async () => {
               const convex = new ConvexHttpClient(convexUrl);
-              return await convex.query(api.users.getById, { userId: token.sub });
+              return await convex.query(api.users.getById, { userId });
             })();
             
             const timeoutPromise = new Promise((_, reject) => 
@@ -96,7 +97,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Persist GitHub token metadata for downstream API calls
-        if (token.provider === "github" && token.accessToken) {
+        if (token.provider === "github" && token.accessToken && userId) {
           try {
             const scopes = Array.isArray(token.githubScopes)
               ? (token.githubScopes as string[])
@@ -109,7 +110,7 @@ export const authOptions: NextAuthOptions = {
               const mutationPromise = (async () => {
                 const convex = new ConvexHttpClient(convexUrl);
                 return await convex.mutation(api.users.upsert, {
-                  id: token.sub,
+                  id: userId,
                   email: session.user.email || "",
                   name: session.user.name || undefined,
                   image: session.user.image || undefined,

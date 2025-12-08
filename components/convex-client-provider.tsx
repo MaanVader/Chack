@@ -12,14 +12,20 @@ export function ConvexClientProvider({
 }) {
   const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
 
+  // Always call hooks unconditionally - before any early returns
+  const convex = useMemo(() => {
+    if (!convexUrl) {
+      console.error("NEXT_PUBLIC_CONVEX_URL is not set");
+      // Return a dummy client if URL is not set (will fail gracefully)
+      return new ConvexReactClient("https://placeholder.convex.cloud");
+    }
+    return new ConvexReactClient(convexUrl);
+  }, [convexUrl]);
+
   if (!convexUrl) {
     console.error("NEXT_PUBLIC_CONVEX_URL is not set");
     return <>{children}</>;
   }
-
-  const convex = useMemo(() => {
-    return new ConvexReactClient(convexUrl);
-  }, [convexUrl]);
 
   return <ConvexProvider client={convex}>{children}</ConvexProvider>;
 }
