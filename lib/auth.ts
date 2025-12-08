@@ -61,6 +61,10 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.sub;
         session.user.provider = token.provider as string;
 
+        if (token.accessToken) {
+          session.accessToken = token.accessToken as string;
+        }
+        
         // Fetch latest user data from Convex to get updated name
         const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
         try {
