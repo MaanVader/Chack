@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useSession } from "next-auth/react";
@@ -27,6 +27,16 @@ export default function AssessmentsList({ projectId }: AssessmentsListProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [detectedType, setDetectedType] = useState<"blackbox" | "whitebox" | null>(null);
+  const [githubAccount, setGithubAccount] = useState<{
+    connected: boolean;
+    username?: string;
+    avatar?: string | null;
+  }>({ connected: false });
+  const [isCheckingGithub, setIsCheckingGithub] = useState(false);
+  const [isConnectingGithub, setIsConnectingGithub] = useState(false);
+  const [githubError, setGithubError] = useState<string | null>(null);
+  const [repoOptions, setRepoOptions] = useState<string[]>([]);
+  const [selectedRepo, setSelectedRepo] = useState<string>("");
 
   const assessments = useQuery(api.assessments.list, { projectId }) ?? [];
   const createAssessment = useMutation(api.assessments.create);
@@ -88,6 +98,136 @@ export default function AssessmentsList({ projectId }: AssessmentsListProps) {
     // Auto-set type if detected
     if (detected) {
       setAssessmentType(detected);
+    }
+  };
+
+  const refreshGithubStatus = useCallback(async () => {
+    setIsCheckingGithub(true);
+    try {
+      const response = await fetch("/api/auth/github/status");
+
+      if (!response.ok) {
+        throw new Error("Unable to check GitHub connection status.");
+      }
+
+      const data = await response.json();
+
+      setGithubAccount({
+        connected: Boolean(data.connected),
+        username: data.username,
+        avatar: data.avatar,
+      });
+
+      if (typeof window !== "undefined") {
+        if (data.connected) {
+          const cachedRepos = window.localStorage.getItem("githubRepoCache");
+          const repos = cachedRepos
+            ? JSON.parse(cachedRepos)
+            : [
+                `https://github.com/${data.username || "github-user"}/security-reports`,
+                `https://github.com/${data.username || "github-user"}/app-audit`,
+              ];
+
+          window.localStorage.setItem("githubRepoCache", JSON.stringify(repos));
+          setRepoOptions(repos);
+        } else {
+          window.localStorage.removeItem("githubRepoCache");
+          setRepoOptions([]);
+          setSelectedRepo("");
+        }
+      }
+    } catch (error: any) {
+      console.error("[Assessments] GitHub status check failed", error);
+      setGithubError(error?.message || "Failed to check GitHub status.");
+    } finally {
+      setIsCheckingGithub(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshGithubStatus();
+  }, [refreshGithubStatus]);
+
+  const handleConnectGithub = async () => {
+    setGithubError(null);
+    setIsConnectingGithub(true);
+    try {
+      const response = await fetch("/api/auth/github/start");
+      if (!response.ok) {
+        throw new Error("Failed to start GitHub authentication.");
+      }
+
+      const data = await response.json();
+      const authWindow = window.open(
+        data.authUrl,
+        "github-connect",
+        "width=600,height=700,noopener"
+      );
+
+      if (!authWindow) {
+        throw new Error("Popup blocked. Please allow popups to connect GitHub.");
+      }
+
+      const handleMessage = (event: MessageEvent) => {
+        if (event.origin !== window.location.origin) return;
+        if (event.data?.type === "github-connected") {
+          refreshGithubStatus();
+          window.removeEventListener("message", handleMessage);
+        }
+      };
+
+      window.addEventListener("message", handleMessage);
+
+      const poll = setInterval(() => {
+        if (authWindow.closed) {
+          clearInterval(poll);
+          refreshGithubStatus();
+          window.removeEventListener("message", handleMessage);
+        }
+      }, 500);
+    } catch (error: any) {
+      console.error("[Assessments] GitHub connect failed", error);
+      setGithubError(error?.message || "GitHub authentication failed.");
+    } finally {
+      setIsConnectingGithub(false);
+    }
+  };
+
+  const handleDisconnectGithub = async () => {
+    setGithubError(null);
+    try {
+      const response = await fetch("/api/auth/github/disconnect", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to disconnect GitHub.");
+      }
+
+      setGithubAccount({ connected: false });
+      setRepoOptions([]);
+      setSelectedRepo("");
+      setDetectedType(null);
+
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem("githubRepoCache");
+      }
+
+      if (assessmentType === "whitebox") {
+        setTargetUrl("");
+      }
+    } catch (error: any) {
+      console.error("[Assessments] GitHub disconnect failed", error);
+      setGithubError(error?.message || "Unable to disconnect GitHub.");
+    }
+  };
+
+  const handleRepoSelect = (value: string) => {
+    setSelectedRepo(value);
+    if (value) {
+      setTargetUrl(value);
+      setDetectedType("whitebox");
+      setAssessmentType("whitebox");
     }
   };
 
@@ -312,6 +452,67 @@ export default function AssessmentsList({ projectId }: AssessmentsListProps) {
             />
           </div>
 
+          <div className="rounded-xl border border-border bg-secondary/20 p-4 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                {githubAccount.connected ? (
+                  <>
+                    {githubAccount.avatar ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={githubAccount.avatar}
+                        alt="GitHub avatar"
+                        className="h-10 w-10 rounded-full border border-border"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-slate-800 border border-border flex items-center justify-center text-lg">
+                        🐙
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm font-semibold text-foreground font-display">Connected to GitHub</p>
+                      <p className="text-xs text-muted-foreground">
+                        {githubAccount.username || "Authenticated GitHub user"}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="h-10 w-10 rounded-full bg-slate-800 border border-border flex items-center justify-center text-lg">
+                      🐙
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground font-display">Connect GitHub</p>
+                      <p className="text-xs text-muted-foreground">Authorize to pick repositories for whitebox scans.</p>
+                    </div>
+                  </>
+                )}
+              </div>
+              {githubAccount.connected ? (
+                <button
+                  type="button"
+                  onClick={handleDisconnectGithub}
+                  className="text-xs px-3 py-2 rounded-lg border border-border text-foreground hover:bg-secondary transition-colors"
+                >
+                  Disconnect
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleConnectGithub}
+                  disabled={isConnectingGithub || isCheckingGithub}
+                  className="text-xs px-3 py-2 rounded-lg bg-gradient-to-r from-slate-800 to-slate-700 text-white hover:from-slate-700 hover:to-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {isConnectingGithub || isCheckingGithub ? "Connecting..." : "Connect GitHub"}
+                </button>
+              )}
+            </div>
+
+            {githubError && (
+              <p className="text-xs text-red-500 font-display animate-slide-in-down">{githubError}</p>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-2 font-display">
@@ -356,6 +557,34 @@ export default function AssessmentsList({ projectId }: AssessmentsListProps) {
                 <option value="network">Network</option>
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2 font-display">
+              GitHub Repository (optional)
+            </label>
+            <select
+              value={selectedRepo}
+              onChange={(e) => handleRepoSelect(e.target.value)}
+              disabled={!githubAccount.connected || repoOptions.length === 0}
+              className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <option value="">
+                {githubAccount.connected
+                  ? repoOptions.length === 0
+                    ? "No repositories available"
+                    : "Select a repository"
+                  : "Connect GitHub to choose a repository"}
+              </option>
+              {repoOptions.map((repo) => (
+                <option key={repo} value={repo}>
+                  {repo}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground mt-2">
+              Pick a connected repository to auto-fill the Git URL. This picker is disabled until GitHub access is connected.
+            </p>
           </div>
 
           <div>
