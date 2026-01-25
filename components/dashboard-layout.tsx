@@ -5,7 +5,7 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import DashboardSidebar from "./dashboard-sidebar";
-import DashboardContent from "./dashboard-content";
+import ProjectsList from "./projects-list";
 
 interface DashboardLayoutProps {
   userId: string;
@@ -32,25 +32,16 @@ export default function DashboardLayout({ userId }: DashboardLayoutProps) {
             </div>
           </div>
         </aside>
-        
+
         {/* Main Content Skeleton */}
         <main className="flex-1 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto">
             <div className="px-6 py-8 bg-background">
               <div className="mx-auto max-w-7xl space-y-6">
-                {/* Header Card Skeleton */}
-                <div className="rounded-2xl border border-primary/10 bg-gradient-to-br from-sky-500/10 via-cyan-500/5 to-emerald-500/5 p-6 space-y-4 animate-pulse">
-                  <div className="h-6 w-32 rounded-full bg-muted/60" />
-                  <div className="h-8 w-64 rounded bg-muted/60" />
-                  <div className="h-4 w-96 max-w-full rounded bg-muted/40" />
-                  <div className="grid grid-cols-3 gap-3 mt-4">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="h-20 rounded-xl bg-muted/50" />
-                    ))}
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
+                  <div className="h-32 rounded-xl bg-muted/40 col-span-2" />
+                  <div className="h-32 rounded-xl bg-muted/40" />
                 </div>
-                
-                {/* Projects Skeleton */}
                 <div className="space-y-4">
                   <div className="h-7 w-32 rounded bg-muted/60 animate-pulse" />
                   <div className="space-y-3">
@@ -78,56 +69,87 @@ export default function DashboardLayout({ userId }: DashboardLayoutProps) {
     );
   }
 
+  const credits = 'credits' in defaultOrg && typeof defaultOrg.credits === "number" ? defaultOrg.credits : 0;
+
   return (
-    <div className="flex h-screen bg-background pt-16">
+    <div className="flex h-screen bg-background pt-16 overflow-hidden">
       <DashboardSidebar currentOrgId={defaultOrg._id} userId={userId} />
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col overflow-hidden bg-background/50 relative">
+        <div className="absolute inset-0 bg-dotted-pattern opacity-5 pointer-events-none" />
         <div className="flex-1 overflow-y-auto">
-          <div className="px-6 py-8 bg-background text-foreground">
-            <div className="mx-auto max-w-7xl">
-              <div className="mb-8 space-y-4">
-                <div className="relative overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-sky-500/10 via-cyan-500/5 to-emerald-500/5 p-6 shadow-lg shadow-sky-500/10">
-                  <div className="absolute inset-0 pointer-events-none opacity-70">
-                    <div className="absolute -top-16 -right-10 h-40 w-40 rounded-full bg-sky-500/20 blur-3xl" />
-                    <div className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-cyan-500/15 blur-3xl" />
-                  </div>
-                  <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div className="space-y-3">
-                      <div className="inline-flex items-center gap-2 rounded-full bg-white/60 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-white/10 dark:text-sky-200">
-                        <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                        AI Pentester Active
-                      </div>
-                      <div>
-                        <h1 className="text-3xl font-bold text-foreground font-display mb-1">
-                          Your security copilot is live
-                        </h1>
-                        <p className="text-sm text-muted-foreground font-display max-w-2xl">
-                          Tracking {'name' in defaultOrg ? defaultOrg.name : 'your organization'} with always-on coverage. Review signals,
-                          launch checks, and keep your stakeholders in the loop.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 md:w-auto">
-                      <StatPill
-                        label="Projects"
-                        value={orgStats?.projectsCount ?? "—"}
-                        hint="tracked"
-                      />
-                      <StatPill
-                        label="Assessments"
-                        value={orgStats?.assessmentsCount ?? "—"}
-                        hint="total runs"
-                      />
-                      <StatPill
-                        label="Credits"
-                        value={'credits' in defaultOrg && typeof defaultOrg.credits === "number" ? defaultOrg.credits : "—"}
-                        hint="available"
-                      />
-                    </div>
+          <div className="px-8 py-10">
+            <div className="mx-auto max-w-6xl space-y-8">
+
+              {/* Header / Welcome Area */}
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                  <h1 className="text-3xl font-display font-bold text-foreground tracking-tight">
+                    Dashboard
+                  </h1>
+                  <p className="text-muted-foreground mt-1 text-base">
+                    Overview of your security posture and assessments
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-xs font-medium px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    System Operational
                   </div>
                 </div>
               </div>
-              <DashboardContent userId={userId} />
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Total Projects */}
+                <div className="p-5 rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm hover:border-primary/20 transition-all group">
+                  <div className="text-sm text-muted-foreground font-medium mb-1">Total Projects</div>
+                  <div className="text-2xl font-bold font-display group-hover:text-primary transition-colors">
+                    {orgStats?.projectsCount ?? "—"}
+                  </div>
+                </div>
+
+                {/* Assessments Run */}
+                <div className="p-5 rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm hover:border-primary/20 transition-all group">
+                  <div className="text-sm text-muted-foreground font-medium mb-1">Assessments</div>
+                  <div className="text-2xl font-bold font-display group-hover:text-primary transition-colors">
+                    {orgStats?.assessmentsCount ?? "—"}
+                  </div>
+                </div>
+
+                {/* Active Credits */}
+                <div className="p-5 rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm hover:border-primary/20 transition-all group relative overflow-hidden">
+                  <div className="relative z-10">
+                    <div className="text-sm text-muted-foreground font-medium mb-1">Available Credits</div>
+                    <div className="text-2xl font-bold font-display group-hover:text-sky-500 transition-colors">
+                      {credits}
+                    </div>
+                  </div>
+                  {/* Subtle decoration for credits */}
+                  <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <svg className="w-12 h-12 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Status / Plan */}
+                <div className="p-5 rounded-2xl border border-border/60 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 backdrop-blur-sm hover:border-indigo-500/20 transition-all">
+                  <div className="text-sm text-muted-foreground font-medium mb-1">Current Plan</div>
+                  <div className="text-xl font-bold font-display text-indigo-600/90 capitalize flex items-center gap-2">
+                    {'plan' in defaultOrg ? defaultOrg.plan : 'Free'}
+                    <span className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">ACTIVE</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Content Area */}
+              <div className="relative">
+                <ProjectsList orgId={defaultOrg._id} />
+              </div>
+
             </div>
           </div>
         </div>
@@ -136,51 +158,5 @@ export default function DashboardLayout({ userId }: DashboardLayoutProps) {
   );
 }
 
-function StatPill({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: string | number;
-  hint: string;
-}) {
-  return (
-    <div className="group relative rounded-xl border border-white/20 bg-white/60 px-4 py-3 shadow-sm backdrop-blur-sm dark:bg-white/10 
-                    transition-all duration-300 ease-out
-                    hover:scale-110 hover:shadow-xl hover:shadow-sky-500/20 
-                    hover:border-sky-300/50 hover:bg-white/80 dark:hover:bg-white/20
-                    cursor-pointer
-                    before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-br before:from-sky-500/0 before:to-cyan-500/0 
-                    before:transition-all before:duration-300 
-                    hover:before:from-sky-500/10 hover:before:to-cyan-500/10
-                    overflow-hidden">
-      {/* Animated background glow */}
-      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-sky-500/0 to-cyan-500/0 
-                      group-hover:from-sky-500/20 group-hover:to-cyan-500/20 
-                      transition-all duration-500 blur-xl opacity-0 group-hover:opacity-100" />
-      
-      <div className="relative z-10">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold 
-                        transition-colors duration-300 group-hover:text-sky-700 dark:group-hover:text-sky-300">
-          {label}
-        </div>
-        <div className="text-xl font-bold text-foreground font-display 
-                        transition-all duration-300 group-hover:scale-105 group-hover:text-sky-600 dark:group-hover:text-sky-400">
-          {value}
-        </div>
-        <div className="text-[11px] text-muted-foreground 
-                        transition-colors duration-300 group-hover:text-sky-600/80 dark:group-hover:text-sky-400/80">
-          {hint}
-        </div>
-      </div>
-      
-      {/* Shine effect on hover */}
-      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full 
-                      transition-transform duration-1000 ease-in-out
-                      bg-gradient-to-r from-transparent via-white/20 to-transparent 
-                      skew-x-12" />
-    </div>
-  );
-}
+
 

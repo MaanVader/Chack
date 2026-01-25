@@ -4,6 +4,8 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { AlertCircle, AlertTriangle, Info, CheckCircle, FileText, MapPin } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface FindingsListProps {
   assessmentId: string;
@@ -16,71 +18,122 @@ export default function FindingsList({
 }: FindingsListProps) {
   const findings = useQuery(api.findings.list, { assessmentId }) ?? [];
 
-  const getSeverityColor = (severity: string) => {
+  const getSeverityStyles = (severity: string) => {
     switch (severity.toLowerCase()) {
       case "critical":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
+        return {
+          wrapper: "border-red-200 bg-red-500/5 dark:border-red-900/50 dark:bg-red-950/20",
+          icon: <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />,
+          badge: "bg-red-100 text-red-700 hover:bg-red-200 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800"
+        };
       case "high":
-        return "bg-orange-500/20 text-orange-400 border-orange-500/30";
+        return {
+          wrapper: "border-orange-200 bg-orange-500/5 dark:border-orange-900/50 dark:bg-orange-950/20",
+          icon: <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />,
+          badge: "bg-orange-100 text-orange-700 hover:bg-orange-200 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800"
+        };
       case "medium":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+        return {
+          wrapper: "border-yellow-200 bg-yellow-500/5 dark:border-yellow-900/50 dark:bg-yellow-950/20",
+          icon: <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />,
+          badge: "bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800"
+        };
       case "low":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+        return {
+          wrapper: "border-blue-200 bg-blue-500/5 dark:border-blue-900/50 dark:bg-blue-950/20",
+          icon: <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
+          badge: "bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800"
+        };
+      case "info":
       default:
-        return "bg-slate-500/20 text-slate-400 border-slate-500/30";
+        return {
+          wrapper: "border-slate-200 bg-slate-500/5 dark:border-slate-800/50 dark:bg-slate-900/20",
+          icon: <Info className="w-5 h-5 text-slate-600 dark:text-slate-400" />,
+          badge: "bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
+        };
     }
   };
 
   return (
-    <section className="space-y-6 animate-fade-in">
+    <section className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-display font-semibold text-black">Findings</h2>
-        <div className="text-sm text-gray-700">
-          {findings.length} {findings.length === 1 ? "finding" : "findings"}
+        <div>
+          <h2 className="text-xl font-display font-semibold text-foreground">Findings & Vulnerabilities</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Security issues identified during the assessment.
+          </p>
+        </div>
+        <div className="text-sm font-medium px-3 py-1 rounded-full bg-secondary text-secondary-foreground border border-border">
+          {findings.length} {findings.length === 1 ? "Issue" : "Issues"} Found
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="grid gap-4">
         {findings.length === 0 ? (
-          <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center">
-            <p className="text-sm text-gray-700 font-display">
-              No findings yet. Findings will appear here once the scan completes.
+          <div className="rounded-xl border border-dashed border-border bg-card/30 p-12 text-center">
+            <div className="mx-auto w-12 h-12 rounded-full bg-secondary/50 flex items-center justify-center mb-4">
+              <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+            </div>
+            <h3 className="text-lg font-medium text-foreground mb-1">No findings yet</h3>
+            <p className="text-sm text-muted-foreground mb-2">
+              Findings will appear here once the scan identifies potential issues.
             </p>
           </div>
         ) : (
-          findings.map((finding, index) => (
-            <div
-              key={finding._id}
-              className={`rounded-xl border p-5 hover:scale-[1.01] transition-all duration-300 animate-fade-in ${getSeverityColor(finding.severity)}`}
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="font-display font-semibold text-lg">{finding.title}</h3>
-                    <span className="rounded-full px-3 py-1 text-xs font-medium capitalize bg-white border border-gray-300">
-                      {finding.severity}
-                    </span>
+          findings.map((finding, index) => {
+            const styles = getSeverityStyles(finding.severity);
+            return (
+              <div
+                key={finding._id}
+                className={`group relative rounded-xl border p-5 transition-all duration-300 hover:shadow-md ${styles.wrapper}`}
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0 mt-1 p-2 rounded-lg bg-background/50 border border-border/50 backdrop-blur-sm">
+                    {styles.icon}
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed">{finding.description}</p>
-                  {finding.location && (
-                    <p className="mt-3 text-xs font-mono bg-white px-2 py-1 rounded border border-gray-200 inline-block">
-                      📍 {finding.location}
-                    </p>
-                  )}
-                  <div className="mt-3 flex items-center gap-4 text-xs">
-                    <span className="px-2 py-1 rounded-full bg-white border border-gray-200 capitalize">Status: {finding.status}</span>
-                    {finding.cvssScore && (
-                      <span className="px-2 py-1 rounded-full bg-white border border-gray-200">CVSS: {finding.cvssScore.toFixed(1)}</span>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="font-semibold text-lg text-foreground tracking-tight group-hover:text-primary transition-colors">
+                          {finding.title}
+                        </h3>
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
+                          <Badge variant="outline" className={`capitalize font-medium border ${styles.badge}`}>
+                            {finding.severity}
+                          </Badge>
+
+                          {finding.cvssScore && (
+                            <Badge variant="outline" className="bg-background/80">
+                              CVSS: {finding.cvssScore.toFixed(1)}
+                            </Badge>
+                          )}
+
+                          <Badge variant="outline" className="bg-background/80 capitalize">
+                            {finding.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                      {finding.description}
+                    </div>
+
+                    {finding.location && (
+                      <div className="mt-4 flex items-center gap-2 text-xs font-mono text-muted-foreground bg-background/50 p-2 rounded border border-border/50 w-fit max-w-full">
+                        <MapPin className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">{finding.location}</span>
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </section>
   );
 }
-

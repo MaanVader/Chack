@@ -28,7 +28,7 @@ export function Navbar() {
     "flex h-16 items-center justify-between",
     isDashboardShell ? "" : "mx-auto max-w-7xl"
   );
-  
+
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
@@ -48,7 +48,7 @@ export function Navbar() {
     if (!provider) return "Unknown";
     return provider === "google" ? "Google" : provider === "github" ? "GitHub" : provider;
   };
-  
+
   // Prioritize Convex user data (always up-to-date), fallback to session only if Convex is loading
   const displayName = user ? (user.name || user.email || "") : (session?.user?.name || session?.user?.email || "");
   const displayEmail = user ? (user.email || "") : (session?.user?.email || "");
@@ -56,7 +56,7 @@ export function Navbar() {
   const userImage = session?.user?.image;
 
   return (
-    <nav 
+    <nav
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b border-transparent",
         scrolled || mobileMenuOpen ? "bg-background/80 backdrop-blur-md border-border shadow-sm" : "bg-transparent"
@@ -66,8 +66,8 @@ export function Navbar() {
         <div className={navInnerClasses}>
           {/* Logo */}
           <div className="flex items-center">
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className="group flex items-center gap-2"
             >
               <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-cyan-500 shadow-lg shadow-sky-500/20 transition-transform duration-300 group-hover:scale-105">
@@ -82,14 +82,14 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
-            {session && (
+            {session && !isDashboardShell && (
               <nav className="flex items-center gap-6 mr-4">
-                <Link 
-                  href="/dashboard" 
+                <Link
+                  href="/dashboard"
                   className={cn(
                     "text-sm font-medium transition-colors relative",
-                    pathname === "/dashboard" 
-                      ? "text-foreground" 
+                    pathname === "/dashboard"
+                      ? "text-foreground"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -98,12 +98,12 @@ export function Navbar() {
                     <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-sky-500 to-cyan-500 rounded-full" />
                   )}
                 </Link>
-                <Link 
-                  href="/dashboard" 
+                <Link
+                  href="/dashboard"
                   className={cn(
                     "text-sm font-medium transition-colors relative",
-                    pathname?.startsWith("/projects") 
-                      ? "text-foreground" 
+                    pathname?.startsWith("/projects")
+                      ? "text-foreground"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -134,46 +134,48 @@ export function Navbar() {
               {status === "loading" ? (
                 <div className="h-9 w-24 bg-muted animate-pulse rounded-lg" />
               ) : session ? (
-                <div className="flex items-center gap-3 pl-2">
-                  <div className="hidden lg:flex flex-col items-end mr-2">
-                    <span className="text-sm font-medium leading-none text-foreground">{displayName}</span>
-                    <span className="text-xs text-muted-foreground mt-1">{displayEmail}</span>
-                  </div>
-                  
-                  <div className="relative group">
-                    <button className="relative h-9 w-9 rounded-full overflow-hidden border border-border shadow-sm transition-transform group-hover:scale-105 ring-2 ring-transparent group-hover:ring-sky-500/30">
-                      {userImage ? (
-                        <img src={userImage} alt={displayName} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="h-full w-full bg-gradient-to-br from-sky-100 to-cyan-100 dark:from-sky-900 dark:to-cyan-900 flex items-center justify-center text-sky-700 dark:text-sky-300 font-semibold">
-                          {displayName.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                    </button>
+                !isDashboardShell && (
+                  <div className="flex items-center gap-3 pl-2">
+                    <div className="hidden lg:flex flex-col items-end mr-2">
+                      <span className="text-sm font-medium leading-none text-foreground">{displayName}</span>
+                      <span className="text-xs text-muted-foreground mt-1">{displayEmail}</span>
+                    </div>
 
-                    {/* Dropdown Menu */}
-                    <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-xl border border-border bg-card p-2 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 translate-y-2 group-hover:translate-y-0 z-50">
-                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                        Account
-                      </div>
-                      <Link
-                        href="/settings"
-                        className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
-                      >
-                        <Settings className="h-4 w-4" />
-                        Settings
-                      </Link>
-                      <div className="my-1 h-px bg-border" />
-                      <button
-                        onClick={() => signOut({ callbackUrl: "/" })}
-                        className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Sign Out
+                    <div className="relative group">
+                      <button className="relative h-9 w-9 rounded-full overflow-hidden border border-border shadow-sm transition-transform group-hover:scale-105 ring-2 ring-transparent group-hover:ring-sky-500/30">
+                        {userImage ? (
+                          <img src={userImage} alt={displayName} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="h-full w-full bg-gradient-to-br from-sky-100 to-cyan-100 dark:from-sky-900 dark:to-cyan-900 flex items-center justify-center text-sky-700 dark:text-sky-300 font-semibold">
+                            {displayName.charAt(0).toUpperCase()}
+                          </div>
+                        )}
                       </button>
+
+                      {/* Dropdown Menu */}
+                      <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-xl border border-border bg-card p-2 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 translate-y-2 group-hover:translate-y-0 z-50">
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                          Account
+                        </div>
+                        <Link
+                          href="/settings"
+                          className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
+                        >
+                          <Settings className="h-4 w-4" />
+                          Settings
+                        </Link>
+                        <div className="my-1 h-px bg-border" />
+                        <button
+                          onClick={() => signOut({ callbackUrl: "/" })}
+                          className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Sign Out
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )
               ) : (
                 <Link
                   href="/auth/login"

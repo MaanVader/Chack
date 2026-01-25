@@ -8,7 +8,7 @@ import { api } from "@/convex/_generated/api";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
-import { Settings } from "lucide-react";
+import { Settings, Building2 } from "lucide-react";
 
 // Mini projects list for sidebar
 function ProjectsList({ orgId }: { orgId: string }) {
@@ -69,215 +69,123 @@ export default function DashboardSidebar({
   const creditPct = Math.min(Math.round((creditsValue / creditCap) * 100), 100);
 
   return (
-    <aside className="w-64 h-full border-r border-border/80 bg-card/90 backdrop-blur text-foreground overflow-y-auto">
-      <div className="p-4 space-y-6">
-        {/* User Profile Section */}
-        {session && user && (
-          <div className="pb-4 border-b border-border">
-            <Link
-              href="/settings"
-              className="flex items-center gap-3 rounded-xl p-3 hover:bg-secondary transition-colors group"
-            >
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-500/20 to-cyan-500/20 flex items-center justify-center overflow-hidden ring-2 ring-sky-500/20 group-hover:ring-sky-400/40 transition-all duration-300 flex-shrink-0">
-                {user.image ? (
-                  <Image
-                    src={user.image}
-                    alt={user.name || user.email}
-                    width={40}
-                    height={40}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                ) : (
-                  <span className="text-sm font-semibold text-sky-400 group-hover:text-sky-300 transition-colors">
-                    {(user.name || user.email)[0]?.toUpperCase()}
-                  </span>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-foreground truncate">
-                  {user.name || user.email}
-                </div>
-                <div className="text-xs text-muted-foreground truncate">
-                  {user.email}
-                </div>
-              </div>
-              <Settings className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-            </Link>
-          </div>
-        )}
+    <aside className="w-64 h-full border-r border-border/40 bg-card/50 backdrop-blur-xl text-foreground flex flex-col">
+      {/* Scrollable Middle Section */}
+      <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
 
-        {/* Current Organization */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Organization
-            </h2>
-            {allOrgs && allOrgs.length > 1 && (
-              <button
-                onClick={() => setShowOrgSwitcher(!showOrgSwitcher)}
-                className="text-xs text-primary hover:text-primary/80 transition-colors"
-              >
-                Switch
-              </button>
-            )}
-          </div>
-          {currentOrg && "name" in currentOrg && (
-            <div className="rounded-xl border border-primary/10 bg-card/80 p-4 space-y-3 shadow-sm">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-foreground font-display text-base truncate">
-                    {currentOrg.name}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    AI coverage for your workspace
-                  </p>
-                </div>
-                <div className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary/90 flex-shrink-0">
-                  Active
-                </div>
-              </div>
-              {"plan" in currentOrg && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span
-                    className="px-2 py-0.5 rounded-full bg-secondary text-foreground capitalize text-xs"
-                    title="Plan controls credit refill cadence"
-                  >
-                    {currentOrg.plan}
-                  </span>
-                  <span className="text-[11px] text-muted-foreground">
-                    Optimized for fast AI scans
-                  </span>
-                </div>
-              )}
-              {"credits" in currentOrg && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Credits:</span>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`font-semibold px-2 py-0.5 rounded-full transition-all duration-300 text-xs ${
-                          creditsValue < 3
-                            ? "text-yellow-700 bg-yellow-50"
-                            : "text-sky-700 bg-sky-50"
-                        }`}
-                        title="Credits used when running AI scans"
-                      >
-                        {creditsValue}
-                      </span>
-                      {creditsValue < 3 && <span className="text-yellow-700">⚠️</span>}
-                    </div>
-                  </div>
-                  <div className="h-1.5 w-full rounded-full bg-secondary/60 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 transition-all`}
-                      style={{ width: `${creditPct}%` }}
-                    />
-                  </div>
-                  <div className="text-[11px] text-muted-foreground">
-                    Keep a small buffer to avoid scan interruptions.
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+        {/* Navigation / Overview */}
+        <div className="space-y-1">
+          <Link href="/dashboard" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium bg-secondary/80 text-foreground transition-all">
+            <div className="w-1 h-4 rounded-full bg-sky-500" />
+            Dashboard
+          </Link>
+        </div>
 
-          {/* Org Switcher */}
-          {showOrgSwitcher && allOrgs && allOrgs.length > 1 && (
-            <div className="mt-3 space-y-2 animate-fade-in">
-              {allOrgs.map((org, index) => (
-                <Link
-                  key={org._id}
-                  href="/dashboard"
-                  className={`block rounded-xl px-4 py-2.5 text-sm transition-all duration-300 font-display border ${
-                    org._id === currentOrgId
-                    ? "bg-gradient-to-r from-sky-500/20 to-cyan-500/20 text-sky-800 border-sky-300"
-                    : "text-foreground border-border bg-card hover:bg-secondary"
-                  }`}
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <div className="truncate">
-                    {"name" in org ? org.name : ""}
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      {"role" in org ? `(${org.role})` : ""}
-                    </span>
+        {/* Projects List */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between px-3 mb-2">
+            <h3 className="text-xs font-medium text-muted-foreground/70 uppercase tracking-widest">
+              Projects
+            </h3>
+          </div>
+          <ProjectsList orgId={currentOrgId} />
+        </div>
+
+        {/* Team Members */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between px-3 mb-2 cursor-pointer hover:text-foreground transition-colors group" onClick={() => setShowMembers(!showMembers)}>
+            <h3 className="text-xs font-medium text-muted-foreground/70 group-hover:text-muted-foreground uppercase tracking-widest transition-colors">
+              Team
+            </h3>
+            <span className="text-[10px] text-muted-foreground group-hover:text-sky-500 transition-colors">
+              {showMembers ? "Hide" : "View"}
+            </span>
+          </div>
+
+          {showMembers && members && (
+            <div className="space-y-1 pl-1">
+              {members.map((member) => (
+                <div key={member.membershipId} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-secondary/30 transition-colors">
+                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-[9px] font-bold text-white uppercase shadow-sm">
+                    {member.name?.[0] || member.email[0]}
                   </div>
-                </Link>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-medium truncate opacity-90">{member.name || member.email}</div>
+                  </div>
+                </div>
               ))}
             </div>
           )}
         </div>
+      </div>
 
-        {/* Quick Stats */}
-        {stats && (
-          <div className="space-y-3 animate-fade-in">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Overview
-            </h2>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between rounded-xl px-4 py-3 border border-border bg-card">
-                <span className="text-sm text-foreground font-display">Projects</span>
-                <span className="text-lg font-display font-bold text-sky-600">
-                  {stats.projectsCount}
-                </span>
-              </div>
-            </div>
+      {/* Bottom Section: User Profile & Org Switcher */}
+      <div className="p-4 border-t border-border/40 bg-card/30 relative">
+        {/* Org Switcher Dropdown (Upwards) */}
+        {showOrgSwitcher && allOrgs && allOrgs.length > 1 && (
+          <div className="absolute bottom-full left-4 right-4 mb-2 p-1 rounded-xl border border-border bg-popover/95 backdrop-blur shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200">
+            {allOrgs.map((org) => (
+              <Link
+                key={org._id}
+                href="/dashboard"
+                onClick={() => setShowOrgSwitcher(false)}
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${org._id === currentOrgId
+                  ? "bg-secondary text-foreground font-medium"
+                  : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                  }`}
+              >
+                <div className="w-2 h-2 rounded-full bg-current opacity-70" />
+                <span className="truncate">{"name" in org ? org.name : ""}</span>
+              </Link>
+            ))}
           </div>
         )}
 
-        {/* Members List */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase font-display tracking-wide">
-              Members
-            </h2>
-            <button
-              onClick={() => setShowMembers(!showMembers)}
-              className="text-xs text-muted-foreground hover:text-primary transition-colors duration-300 font-display"
-            >
-              {showMembers ? "Hide" : "Show"}
-            </button>
-          </div>
-          {showMembers && members && (
-            <div className="space-y-2 animate-fade-in">
-              {members.length === 0 ? (
-                <p className="text-xs text-muted-foreground font-display px-3 py-2">No members yet</p>
-              ) : (
-                members.map((member, index) => (
-                  <div
-                    key={member.membershipId}
-                    className="flex items-center gap-3 rounded-xl px-3 py-2 border border-border bg-card hover:bg-secondary hover:scale-[1.02] transition-all duration-300"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-500/20 to-cyan-500/20 flex items-center justify-center text-xs font-semibold text-sky-600 ring-2 ring-sky-500/20 flex-shrink-0">
-                      {member.name?.[0]?.toUpperCase() || member.email[0]?.toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm text-foreground truncate font-display">
-                        {member.name || member.email}
-                      </div>
-                      <div className="text-xs text-muted-foreground capitalize">
-                        {member.role}
-                      </div>
-                    </div>
+        {session && user && (
+          <div className="flex items-center gap-3 h-10">
+            {/* Avatar */}
+            <Link href="/settings" className="shrink-0 group">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 p-0.5 shadow-md group-hover:shadow-emerald-500/20 transition-all">
+                {user.image ? (
+                  <Image
+                    src={user.image}
+                    alt={user.name || user.email}
+                    width={36}
+                    height={36}
+                    className="w-full h-full rounded-full object-cover border-2 border-background"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-background flex items-center justify-center text-emerald-600 font-bold text-xs ring-2 ring-transparent group-hover:ring-emerald-200 transition-all">
+                    {(user.name || user.email)[0]?.toUpperCase()}
                   </div>
-                ))
-              )}
-            </div>
-          )}
-          {!showMembers && members && (
-            <div className="text-xs text-muted-foreground font-display px-3 py-2 rounded-lg bg-secondary">
-              {members.length} {members.length === 1 ? "member" : "members"}
-            </div>
-          )}
-        </div>
+                )}
+              </div>
+            </Link>
 
-        {/* Projects (Targets) List */}
-        <div className="animate-fade-in">
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-            Projects
-          </h2>
-          <ProjectsList orgId={currentOrgId} />
-        </div>
+            {/* Info Section (User Name + Org Name) - Click to Switch Org */}
+            <div
+              className={`flex-1 min-w-0 flex flex-col justify-center ${allOrgs && allOrgs.length > 1 ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
+              onClick={() => allOrgs && allOrgs.length > 1 && setShowOrgSwitcher(!showOrgSwitcher)}
+            >
+              <div className="text-sm font-semibold text-foreground truncate leading-tight">
+                {user.name || "User"}
+              </div>
+              <div className="text-xs text-muted-foreground truncate flex items-center gap-1 leading-tight">
+                {currentOrg && "name" in currentOrg ? currentOrg.name : "Organization"}
+                {allOrgs && allOrgs.length > 1 && (
+                  <svg className="w-3 h-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                )}
+              </div>
+            </div>
+
+            {/* Settings Link */}
+            <Link href="/settings" className="shrink-0 text-muted-foreground hover:text-foreground transition-colors p-1">
+              <Settings className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
       </div>
     </aside>
   );

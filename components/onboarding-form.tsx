@@ -42,24 +42,29 @@ export default function OnboardingForm({ userId }: { userId: string }) {
     setIsSubmitting(true);
 
     try {
+      console.log("Starting organization creation...", { orgName, userId });
       const orgId = await createOrg({ name: orgName, userId });
+      console.log("Organization created:", orgId);
+
+      console.log("Joining organization...");
       await joinOrg({ orgId, userId, role: "owner" });
-      
+      console.log("Joined organization successfully");
+
       showSuccess("🎉 Welcome aboard! Your organization is ready.");
-      
+
       setTimeout(() => {
         router.push("/dashboard");
       }, 500);
     } catch (error: any) {
-      console.error("Onboarding error:", error);
-      
+      console.error("Onboarding flow failed:", error);
+
       let errorMessage = "💥 Something went wrong!";
       if (error?.message?.includes("exists")) {
         errorMessage = "🔄 Organization already exists. Try a different name?";
       } else if (error?.message) {
         errorMessage = `😅 ${error.message}`;
       }
-      
+
       showError(errorMessage);
       setIsSubmitting(false);
     }

@@ -8,6 +8,9 @@ import { api } from "@/convex/_generated/api";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useToast } from "./toast";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Plus, ArrowRight, Activity, Globe, Layout } from "lucide-react";
 
 interface ProjectsListProps {
   orgId: string;
@@ -18,7 +21,7 @@ export default function ProjectsList({ orgId }: ProjectsListProps) {
   const { showToast, error: showError, success: showSuccess, ToastComponent } = useToast();
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
-  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -31,31 +34,26 @@ export default function ProjectsList({ orgId }: ProjectsListProps) {
     const newErrors: Record<string, string> = {};
 
     if (!projectName.trim()) {
-      newErrors.name = "🎨 Your project needs a name! Even 'Project X' works.";
+      newErrors.name = "Project name is required";
     } else if (projectName.length < 2) {
-      newErrors.name = "🤏 Too short! At least 2 characters please.";
+      newErrors.name = "Name must be at least 2 characters";
     } else if (projectName.length > 100) {
-      newErrors.name = "📚 Woah there! Keep it under 100 characters.";
+      newErrors.name = "Name must be less than 100 characters";
     }
 
     if (projectDescription.length > 500) {
-      newErrors.description = "✍️ Description is too long. Save the novel for later!";
+      newErrors.description = "Description too long";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      showError("🛑 Hold up! Fix those errors first.");
-      return;
-    }
+  const onSubmit = async () => {
+    if (!validateForm()) return;
 
     if (!session?.user?.id) {
-      showError("🔐 You need to be logged in to create projects!");
+      showError("You need to be logged in");
       return;
     }
 
@@ -69,22 +67,14 @@ export default function ProjectsList({ orgId }: ProjectsListProps) {
         createdByUserId: session.user.id,
       });
 
-      showSuccess("✨ Project created! Time to start scanning.");
+      showSuccess("Project created successfully");
       setProjectName("");
       setProjectDescription("");
       setErrors({});
-      setShowCreateForm(false);
+      setShowCreateDialog(false);
     } catch (error: any) {
       console.error("Project creation error:", error);
-      
-      let errorMessage = "💥 Something went wrong!";
-      if (error?.message?.includes("permission")) {
-        errorMessage = "🚫 You don't have permission to create projects.";
-      } else if (error?.message) {
-        errorMessage = `😅 ${error.message}`;
-      }
-      
-      showError(errorMessage);
+      showError(error?.message || "Failed to create project");
     } finally {
       setIsSubmitting(false);
     }
@@ -93,159 +83,174 @@ export default function ProjectsList({ orgId }: ProjectsListProps) {
   return (
     <>
       {ToastComponent}
-      <section className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-display font-bold text-foreground">Projects</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Track assessments, scan readiness, and jump into the next AI run.
-          </p>
-        </div>
-        <button
-          onClick={() => setShowCreateForm(!showCreateForm)}
-          className="rounded-lg bg-gradient-to-r from-sky-500 to-cyan-500 px-5 py-2.5 text-sm font-semibold text-white hover:from-sky-400 hover:to-cyan-400 hover:scale-105 hover:shadow-lg hover:shadow-sky-500/30 transition-all duration-300 font-display"
-        >
-          {showCreateForm ? "Cancel" : "+ New Project"}
-        </button>
-      </div>
-
-      {showCreateForm && (
-        <form onSubmit={onSubmit} className="rounded-xl border border-border bg-card p-6 space-y-4">
+      <section className="space-y-6">
+        <div className="flex items-center justify-between">
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2 font-display">
-              Project Name *
-            </label>
-            <input
-              type="text"
-              placeholder="My Security Project"
-              value={projectName}
-              onChange={(e) => {
-                setProjectName(e.target.value);
-                if (errors.name) setErrors({ ...errors, name: "" });
-              }}
-              className={`w-full rounded-lg border ${errors.name ? 'border-red-500 focus:ring-red-400' : 'border-input focus:ring-primary/50'} bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-primary transition-all duration-300`}
-            />
-            {errors.name && (
-              <p className="text-xs text-red-500 mt-1 font-display animate-slide-in-down">{errors.name}</p>
-            )}
+            <h2 className="text-xl font-display font-semibold text-foreground tracking-tight">Active Projects</h2>
+            <p className="text-sm text-muted-foreground mt-1">Manage and monitor your security projects</p>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2 font-display">
-              Description (optional)
-            </label>
-            <textarea
-              placeholder="Brief description of this project..."
-              value={projectDescription}
-              onChange={(e) => {
-                setProjectDescription(e.target.value);
-                if (errors.description) setErrors({ ...errors, description: "" });
-              }}
-              rows={2}
-              className={`w-full rounded-lg border ${errors.description ? 'border-red-500 focus:ring-red-400' : 'border-input focus:ring-primary/50'} bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-primary transition-all duration-300 resize-none`}
-            />
-            {errors.description && (
-              <p className="text-xs text-red-500 mt-1 font-display animate-slide-in-down">{errors.description}</p>
-            )}
-          </div>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rounded-lg bg-gradient-to-r from-sky-500 to-cyan-500 px-6 py-3 text-sm font-semibold text-white hover:from-sky-400 hover:to-cyan-400 disabled:cursor-not-allowed disabled:opacity-50 hover:scale-105 hover:shadow-lg hover:shadow-sky-500/30 transition-all duration-300 font-display disabled:hover:scale-100"
-          >
-            {isSubmitting ? "✨ Creating..." : "Create Project"}
-          </button>
-        </form>
-      )}
 
-      <div className="space-y-3">
-        {isLoading ? (
-          [1, 2, 3].map((idx) => (
-            <div
-              key={idx}
-              className="rounded-lg border border-border bg-card p-6 animate-pulse space-y-3"
-            >
-              <div className="h-4 w-40 rounded bg-muted/40" />
-              <div className="h-3 w-64 rounded bg-muted/40" />
-              <div className="h-3 w-24 rounded bg-muted/30" />
-            </div>
-          ))
-        ) : projects.length === 0 ? (
-          <div className="rounded-lg border border-border bg-card p-10 text-center">
-            <p className="text-sm text-muted-foreground font-display">
-              No projects yet. Create your first project to get started.
-            </p>
-          </div>
-        ) : (
-          projects.map((project, index) => (
-            <Link
-              key={project._id}
-              href={`/projects/${project._id}`}
-              className="block rounded-xl border border-border/80 bg-card p-6 hover:border-primary/50 hover:shadow-lg hover:-translate-y-[1px] hover:bg-card/90 transition-all duration-300 animate-fade-in"
-              style={{ animationDelay: `${index * 0.05}s` }}
-            >
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-display font-semibold text-lg text-foreground">
-                      {project.name}
-                    </h3>
-                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold capitalize text-primary/90">
-                      {project.status || "active"}
-                    </span>
-                    <RiskBadge status={project.status} />
-                  </div>
-                  {project.description && (
-                    <p className="text-sm text-muted-foreground leading-relaxed">{project.description}</p>
+          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+            <DialogTrigger asChild>
+              <Button className="font-display">
+                <Plus className="w-4 h-4 mr-2" />
+                New Project
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Create New Project</DialogTitle>
+                <DialogDescription>
+                  Start a new security project to organize your assessments.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Project Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Website Scan"
+                    value={projectName}
+                    onChange={(e) => {
+                      setProjectName(e.target.value);
+                      if (errors.name) setErrors({ ...errors, name: "" });
+                    }}
+                    className={`flex h-10 w-full rounded-md border ${errors.name ? 'border-red-500 ring-red-500' : 'border-input'} bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
+                  />
+                  {errors.name && (
+                    <p className="text-[0.8rem] text-red-500 font-medium">{errors.name}</p>
                   )}
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-secondary/60 px-3 py-1">
-                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                      Ready for AI scan
-                    </span>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-secondary/60 px-3 py-1">
-                      Created {new Date(project.createdAt).toLocaleDateString()}
-                    </span>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-secondary/60 px-3 py-1">
-                      Last touch: {new Date(project.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
                 </div>
-                <div className="flex flex-col items-end gap-2 text-sm text-primary font-semibold">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-primary">
-                    Run AI scan
-                    <span aria-hidden>→</span>
-                  </span>
-                  <span className="text-muted-foreground text-xs font-normal">
-                    Opens project details
-                  </span>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Description <span className="text-muted-foreground font-normal">(Optional)</span>
+                  </label>
+                  <textarea
+                    placeholder="Brief description..."
+                    value={projectDescription}
+                    onChange={(e) => {
+                      setProjectDescription(e.target.value);
+                      if (errors.description) setErrors({ ...errors, description: "" });
+                    }}
+                    rows={3}
+                    className={`flex min-h-[80px] w-full rounded-md border ${errors.description ? 'border-red-500 ring-red-500' : 'border-input'} bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none`}
+                  />
+                  {errors.description && (
+                    <p className="text-[0.8rem] text-red-500 font-medium">{errors.description}</p>
+                  )}
                 </div>
               </div>
-            </Link>
-          ))
-        )}
-      </div>
-    </section>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowCreateDialog(false)} disabled={isSubmitting}>
+                  Cancel
+                </Button>
+                <Button onClick={onSubmit} disabled={isSubmitting} className="font-display">
+                  {isSubmitting ? "Creating..." : "Create Project"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {isLoading ? (
+            [1, 2, 3].map((idx) => (
+              <div
+                key={idx}
+                className="h-[200px] rounded-xl border border-border bg-card/50 p-6 animate-pulse"
+              />
+            ))
+          ) : projects.length === 0 ? (
+            <div className="col-span-full rounded-xl border border-dashed border-border p-12 text-center bg-card/30">
+              <div className="mx-auto w-12 h-12 rounded-full bg-secondary/50 flex items-center justify-center mb-4">
+                <Layout className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-medium text-foreground mb-1">No projects found</h3>
+              <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
+                Get started by creating your first project to organize your security assessments and findings.
+              </p>
+              <Button onClick={() => setShowCreateDialog(true)} variant="outline">
+                Create new project
+              </Button>
+            </div>
+          ) : (
+            projects.map((project) => (
+              <Link
+                key={project._id}
+                href={`/projects/${project._id}`}
+                className="group relative flex flex-col justify-between rounded-xl border border-border/60 bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-display font-semibold text-lg text-foreground group-hover:text-primary transition-colors truncate">
+                        {project.name}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                        <Activity className="w-3 h-3" />
+                        Updated {new Date(project.updatedAt || project.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <RiskBadge status={project.status} />
+                  </div>
+
+                  <div className="min-h-[2.5rem]">
+                    {project.description ? (
+                      <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                        {project.description}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground/40 italic">No description provided</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-4 mt-4 border-t border-border/40">
+                  <div className="flex items-center gap-2">
+                    {/* Placeholder for future specific project icons/stats */}
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-secondary/50 text-secondary-foreground text-xs font-medium">
+                      PM
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 text-sm font-medium text-primary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                    View Project
+                    <ArrowRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </Link>
+            ))
+          )}
+        </div>
+      </section>
     </>
   );
 }
 
 function RiskBadge({ status }: { status?: string }) {
   const normalized = (status || "active").toLowerCase();
-  let label = "Low risk";
-  let tone = "bg-emerald-500/10 text-emerald-300 border-emerald-400/30";
 
-  if (normalized.includes("pending") || normalized.includes("review")) {
-    label = "Reviewing";
-    tone = "bg-amber-500/10 text-amber-200 border-amber-400/30";
-  } else if (normalized.includes("blocked") || normalized.includes("issue")) {
-    label = "Action needed";
-    tone = "bg-red-500/10 text-red-200 border-red-400/30";
+  let styles = "bg-secondary text-secondary-foreground border-transparent";
+  let label = "Active";
+
+  if (normalized.includes("processing") || normalized.includes("pending")) {
+    styles = "bg-blue-500/10 text-blue-600 border-blue-200 dark:border-blue-900";
+    label = "Processing";
+  } else if (normalized.includes("issue") || normalized.includes("risk")) {
+    styles = "bg-red-500/10 text-red-600 border-red-200 dark:border-red-900";
+    label = "Risk Found";
+  } else if (normalized.includes("archived")) {
+    styles = "bg-slate-500/10 text-slate-500 border-slate-200 dark:border-slate-800";
+    label = "Archived";
   }
 
   return (
-    <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${tone}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-semibold border ${styles}`}>
       {label}
     </span>
   );
 }
-
